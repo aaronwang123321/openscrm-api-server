@@ -2,10 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	val "github.com/go-playground/validator/v10"
-	"golang.org/x/net/context"
 	"log"
 	"net/http"
 	"openscrm/app/constants"
@@ -28,6 +24,11 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	val "github.com/go-playground/validator/v10"
+	"golang.org/x/net/context"
 )
 
 func init() {
@@ -57,7 +58,14 @@ func init() {
 	models.SetupIDConverter()
 
 	if conf.Settings.App.AutoSyncWeWorkData {
-		services.Syncs()
+		// 检查企业微信配置是否完整
+		if conf.Settings.WeWork.ContactSecret == "todo" ||
+			conf.Settings.WeWork.CustomerSecret == "todo" ||
+			conf.Settings.WeWork.MainAgentSecret == "todo" {
+			log2.Sugar.Warn("企业微信API配置不完整，跳过自动同步数据")
+		} else {
+			services.Syncs()
+		}
 	}
 }
 
